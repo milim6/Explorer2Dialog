@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" Name="Explorer2Dialog" Language="1033"
+           Version="$(var.ProductVersion)" Manufacturer="Explorer2Dialog"
+           UpgradeCode="{CB721FDD-A5F4-4035-B313-74568AD708B0}">
+    <Package InstallerVersion="500" Platform="x64" Compressed="yes"
+             InstallScope="perUser" InstallPrivileges="limited" />
+    <!-- The build uses three version fields. A rebuild can replace the same release. -->
+    <MajorUpgrade Schedule="afterInstallInitialize" AllowSameVersionUpgrades="yes"
+                  DowngradeErrorMessage="A newer version of Explorer2Dialog is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+    <Property Id="ARPNOMODIFY" Value="1" />
+
+    <Property Id="WINDOWS_BUILD">
+      <RegistrySearch Id="ReadWindowsBuild" Root="HKLM" Key="SOFTWARE\Microsoft\Windows NT\CurrentVersion"
+                      Name="CurrentBuildNumber" Type="raw" Win64="yes" />
+    </Property>
+    <Condition Message="Explorer2Dialog requires Windows 11 x64.">
+      Installed OR (VersionNT64 AND MsiNTProductType = 1 AND WINDOWS_BUILD &gt;= 22000)
+    </Condition>
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramMenuFolder" />
+      <Directory Id="LocalAppDataFolder">
+        <Directory Id="INSTALLFOLDER" Name="Explorer2Dialog">
+          <Component Id="ApplicationFiles" Guid="{B5C4B131-BEC4-4F55-B20E-FEE33EE1B40C}" Win64="yes">
+            <File Id="Explorer2DialogExe" Name="Explorer2Dialog.exe" Source="$(var.AppExe)" />
+            <File Id="MitLicense" Name="LICENSE.txt" Source="$(var.LicenseFile)" />
+            <Shortcut Id="StartMenuShortcut" Name="Explorer2Dialog" Directory="ProgramMenuFolder"
+                      WorkingDirectory="INSTALLFOLDER" Target="[#Explorer2DialogExe]" />
+            <RemoveFolder Id="RemoveApplicationFolder" On="uninstall" />
+            <RegistryValue Root="HKCU" Key="Software\Explorer2Dialog\Installer" Name="Installed"
+                           Type="integer" Value="1" KeyPath="yes" />
+          </Component>
+        </Directory>
+      </Directory>
+    </Directory>
+
+    <Feature Id="Application" Title="Explorer2Dialog" Level="1">
+      <ComponentRef Id="ApplicationFiles" />
+    </Feature>
+  </Product>
+</Wix>
